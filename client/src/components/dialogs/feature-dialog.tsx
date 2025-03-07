@@ -11,13 +11,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { priorities, tShirtSizes, effortLevels } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
+import { useState } from "react";
 
 interface FeatureDialogProps {
   feature?: Feature;
   mode?: "create" | "edit";
+  onClose?: () => void;
 }
 
-export default function FeatureDialog({ feature, mode = "edit" }: FeatureDialogProps) {
+export default function FeatureDialog({ feature, mode = "edit", onClose }: FeatureDialogProps) {
   const defaultValues = mode === "create" ? {
     name: "",
     description: "",
@@ -49,8 +51,29 @@ export default function FeatureDialog({ feature, mode = "edit" }: FeatureDialogP
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/features"] });
+      if (onClose) onClose();
     },
   });
+
+  const [milestones, setMilestones] = useState(defaultValues.milestones || []);
+
+  const addMilestone = () => {
+    setMilestones([...milestones, { description: "", date: format(new Date(), "yyyy-MM-dd") }]);
+    form.setValue("milestones", [...milestones, { description: "", date: format(new Date(), "yyyy-MM-dd") }]);
+  };
+
+  const updateMilestone = (index: number, field: keyof typeof milestones[0], value: string) => {
+    const newMilestones = [...milestones];
+    newMilestones[index] = { ...newMilestones[index], [field]: value };
+    setMilestones(newMilestones);
+    form.setValue("milestones", newMilestones);
+  };
+
+  const removeMilestone = (index: number) => {
+    const newMilestones = milestones.filter((_, i) => i !== index);
+    setMilestones(newMilestones);
+    form.setValue("milestones", newMilestones);
+  };
 
   return (
     <DialogContent className="max-w-2xl">
@@ -194,6 +217,53 @@ export default function FeatureDialog({ feature, mode = "edit" }: FeatureDialogP
                 </FormItem>
               )}
             />
+          </div>
+
+          <FormField
+            control={form.control}
+            name="notes"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Notes (Markdown)</FormLabel>
+                <FormControl>
+                  <Textarea className="font-mono" rows={6} {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <FormLabel>Milestones</FormLabel>
+              <Button type="button" variant="outline" onClick={addMilestone}>
+                Add Milestone
+              </Button>
+            </div>
+            <div className="space-y-2">
+              {milestones.map((milestone, index) => (
+                <div key={index} className="flex gap-2">
+                  <Input
+                    placeholder="Description"
+                    value={milestone.description}
+                    onChange={(e) => updateMilestone(index, "description", e.target.value)}
+                  />
+                  <Input
+                    type="date"
+                    value={milestone.date}
+                    onChange={(e) => updateMilestone(index, "date", e.target.value)}
+                  />
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    size="icon"
+                    onClick={() => removeMilestone(index)}
+                  >
+                    ×
+                  </Button>
+                </div>
+              ))}
+            </div>
           </div>
 
           <Button type="submit" disabled={mutation.isPending}>

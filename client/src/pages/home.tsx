@@ -36,7 +36,7 @@ export default function Home() {
                   New Feature
                 </Button>
               </DialogTrigger>
-              <FeatureDialog mode="create" />
+              <FeatureDialog mode="create" onClose={() => setShowNewFeature(false)} />
             </Dialog>
             <Button
               variant="outline"

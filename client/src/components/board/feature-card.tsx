@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Draggable } from "react-beautiful-dnd";
 import { format } from "date-fns";
 import { Feature } from "@shared/schema";
@@ -11,6 +12,8 @@ interface FeatureCardProps {
 }
 
 export default function FeatureCard({ feature, index }: FeatureCardProps) {
+  const [showDialog, setShowDialog] = useState(false);
+
   const priorityColors = {
     high: "bg-destructive/10 border-destructive/20",
     medium: "bg-yellow-500/10 border-yellow-500/20",
@@ -25,7 +28,7 @@ export default function FeatureCard({ feature, index }: FeatureCardProps) {
           {...provided.draggableProps}
           {...provided.dragHandleProps}
         >
-          <Dialog>
+          <Dialog open={showDialog} onOpenChange={setShowDialog}>
             <DialogTrigger asChild>
               <Card
                 className={`mb-2 cursor-pointer hover:shadow-md transition-shadow ${
@@ -41,7 +44,7 @@ export default function FeatureCard({ feature, index }: FeatureCardProps) {
                 </CardContent>
               </Card>
             </DialogTrigger>
-            <FeatureDialog feature={feature} />
+            <FeatureDialog feature={feature} onClose={() => setShowDialog(false)} />
           </Dialog>
         </div>
       )}
