@@ -3,27 +3,46 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Feature, insertFeatureSchema } from "@shared/schema";
 import { DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Form, FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { priorities, tShirtSizes, effortLevels } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import { format } from "date-fns";
 
 interface FeatureDialogProps {
-  feature: Feature;
+  feature?: Feature;
+  mode?: "create" | "edit";
 }
 
-export default function FeatureDialog({ feature }: FeatureDialogProps) {
+export default function FeatureDialog({ feature, mode = "edit" }: FeatureDialogProps) {
+  const defaultValues = mode === "create" ? {
+    name: "",
+    description: "",
+    priority: "medium",
+    release: "",
+    estimatedCompletion: format(new Date(), "yyyy-MM-dd"),
+    tShirtSize: "m",
+    effortLevel: "medium",
+    backlogItems: [],
+    notes: "",
+    milestones: []
+  } : feature;
+
   const form = useForm({
     resolver: zodResolver(insertFeatureSchema),
-    defaultValues: feature,
+    defaultValues,
   });
 
-  const updateFeature = useMutation({
-    mutationFn: async (data: Partial<Feature>) => {
-      await apiRequest("PATCH", `/api/features/${feature.id}`, data);
+  const mutation = useMutation({
+    mutationFn: async (data: typeof defaultValues) => {
+      if (mode === "create") {
+        await apiRequest("POST", "/api/features", data);
+      } else if (feature) {
+        await apiRequest("PATCH", `/api/features/${feature.id}`, data);
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/features"] });
@@ -33,12 +52,12 @@ export default function FeatureDialog({ feature }: FeatureDialogProps) {
   return (
     <DialogContent className="max-w-2xl">
       <DialogHeader>
-        <DialogTitle>Edit Feature</DialogTitle>
+        <DialogTitle>{mode === "create" ? "New Feature" : "Edit Feature"}</DialogTitle>
       </DialogHeader>
 
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit((data) => updateFeature.mutate(data))}
+          onSubmit={form.handleSubmit((data) => mutation.mutate(data))}
           className="space-y-4"
         >
           <FormField
@@ -50,6 +69,7 @@ export default function FeatureDialog({ feature }: FeatureDialogProps) {
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -63,6 +83,7 @@ export default function FeatureDialog({ feature }: FeatureDialogProps) {
                 <FormControl>
                   <Textarea {...field} />
                 </FormControl>
+                <FormMessage />
               </FormItem>
             )}
           />
@@ -74,10 +95,7 @@ export default function FeatureDialog({ feature }: FeatureDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Priority</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue />
@@ -91,6 +109,35 @@ export default function FeatureDialog({ feature }: FeatureDialogProps) {
                       ))}
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="release"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Release</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="estimatedCompletion"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Estimated Completion</FormLabel>
+                  <FormControl>
+                    <Input type="date" {...field} />
+                  </FormControl>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -101,10 +148,7 @@ export default function FeatureDialog({ feature }: FeatureDialogProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>T-Shirt Size</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue />
@@ -118,13 +162,39 @@ export default function FeatureDialog({ feature }: FeatureDialogProps) {
                       ))}
                     </SelectContent>
                   </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="effortLevel"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Level of Effort</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {effortLevels.map((level) => (
+                        <SelectItem key={level} value={level}>
+                          {level}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
                 </FormItem>
               )}
             />
           </div>
 
-          <Button type="submit" disabled={updateFeature.isPending}>
-            Save Changes
+          <Button type="submit" disabled={mutation.isPending}>
+            {mode === "create" ? "Create Feature" : "Save Changes"}
           </Button>
         </form>
       </Form>
