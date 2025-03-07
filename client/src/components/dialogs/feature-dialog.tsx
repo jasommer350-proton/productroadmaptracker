@@ -76,7 +76,7 @@ export default function FeatureDialog({ feature, mode = "edit", onClose }: Featu
   };
 
   return (
-    <DialogContent className="max-w-2xl">
+    <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col">
       <DialogHeader>
         <DialogTitle>{mode === "create" ? "New Feature" : "Edit Feature"}</DialogTitle>
       </DialogHeader>
@@ -84,68 +84,15 @@ export default function FeatureDialog({ feature, mode = "edit", onClose }: Featu
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit((data) => mutation.mutate(data))}
-          className="space-y-4"
+          className="flex flex-col h-full"
         >
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Feature Name</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <FormField
-            control={form.control}
-            name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Description</FormLabel>
-                <FormControl>
-                  <Textarea {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-4 overflow-y-auto pr-4 flex-1">
             <FormField
               control={form.control}
-              name="priority"
+              name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Priority</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {priorities.map((priority) => (
-                        <SelectItem key={priority} value={priority}>
-                          {priority}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="release"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Release</FormLabel>
+                  <FormLabel>Feature Name</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -156,119 +103,176 @@ export default function FeatureDialog({ feature, mode = "edit", onClose }: Featu
 
             <FormField
               control={form.control}
-              name="estimatedCompletion"
+              name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Estimated Completion</FormLabel>
+                  <FormLabel>Description</FormLabel>
                   <FormControl>
-                    <Input type="date" {...field} />
+                    <Textarea {...field} rows={3} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <FormField
+                control={form.control}
+                name="priority"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Priority</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {priorities.map((priority) => (
+                          <SelectItem key={priority} value={priority}>
+                            {priority}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="release"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Release</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="estimatedCompletion"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Estimated Completion</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="tShirtSize"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>T-Shirt Size</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {tShirtSizes.map((size) => (
+                          <SelectItem key={size} value={size}>
+                            {size.toUpperCase()}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="effortLevel"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Level of Effort</FormLabel>
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {effortLevels.map((level) => (
+                          <SelectItem key={level} value={level}>
+                            {level}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+
             <FormField
               control={form.control}
-              name="tShirtSize"
+              name="notes"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>T-Shirt Size</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {tShirtSizes.map((size) => (
-                        <SelectItem key={size} value={size}>
-                          {size.toUpperCase()}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <FormLabel>Notes (Markdown)</FormLabel>
+                  <FormControl>
+                    <Textarea className="font-mono" rows={4} {...field} />
+                  </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="effortLevel"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Level of Effort</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {effortLevels.map((level) => (
-                        <SelectItem key={level} value={level}>
-                          {level}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-
-          <FormField
-            control={form.control}
-            name="notes"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Notes (Markdown)</FormLabel>
-                <FormControl>
-                  <Textarea className="font-mono" rows={6} {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <FormLabel>Milestones</FormLabel>
-              <Button type="button" variant="outline" onClick={addMilestone}>
-                Add Milestone
-              </Button>
-            </div>
-            <div className="space-y-2">
-              {milestones.map((milestone, index) => (
-                <div key={index} className="flex gap-2">
-                  <Input
-                    placeholder="Description"
-                    value={milestone.description}
-                    onChange={(e) => updateMilestone(index, "description", e.target.value)}
-                  />
-                  <Input
-                    type="date"
-                    value={milestone.date}
-                    onChange={(e) => updateMilestone(index, "date", e.target.value)}
-                  />
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon"
-                    onClick={() => removeMilestone(index)}
-                  >
-                    ×
-                  </Button>
-                </div>
-              ))}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <FormLabel>Milestones</FormLabel>
+                <Button type="button" variant="outline" onClick={addMilestone}>
+                  Add Milestone
+                </Button>
+              </div>
+              <div className="space-y-2">
+                {milestones.map((milestone, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      placeholder="Description"
+                      value={milestone.description}
+                      onChange={(e) => updateMilestone(index, "description", e.target.value)}
+                    />
+                    <Input
+                      type="date"
+                      value={milestone.date}
+                      onChange={(e) => updateMilestone(index, "date", e.target.value)}
+                    />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      onClick={() => removeMilestone(index)}
+                    >
+                      ×
+                    </Button>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
 
-          <Button type="submit" disabled={mutation.isPending}>
-            {mode === "create" ? "Create Feature" : "Save Changes"}
-          </Button>
+          <div className="flex justify-end mt-6 pt-4 border-t">
+            <Button type="submit" disabled={mutation.isPending}>
+              {mode === "create" ? "Create Feature" : "Save Changes"}
+            </Button>
+          </div>
         </form>
       </Form>
     </DialogContent>
