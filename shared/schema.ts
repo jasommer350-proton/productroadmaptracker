@@ -25,7 +25,9 @@ export const features = pgTable("features", {
   milestones: json("milestones").$type<Array<z.infer<typeof milestoneSchema>>>().notNull(),
 });
 
-export const insertFeatureSchema = createInsertSchema(features).extend({
+export const insertFeatureSchema = createInsertSchema(features, {
+  estimatedCompletion: z.string().transform(str => new Date(str)),
+}).extend({
   milestones: z.array(milestoneSchema),
   backlogItems: z.array(z.string()),
 });

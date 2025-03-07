@@ -29,7 +29,10 @@ export default function FeatureDialog({ feature, mode = "edit" }: FeatureDialogP
     backlogItems: [],
     notes: "",
     milestones: []
-  } : feature;
+  } : {
+    ...feature,
+    estimatedCompletion: feature ? format(new Date(feature.estimatedCompletion), "yyyy-MM-dd") : "",
+  };
 
   const form = useForm({
     resolver: zodResolver(insertFeatureSchema),
