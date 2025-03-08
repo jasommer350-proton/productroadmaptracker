@@ -11,10 +11,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { priorities, tShirtSizes, effortLevels } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, ArrowUpDown } from "lucide-react";
 import ReactMarkdown from "react-markdown";
+import MarkdownToolbar from "./markdown-toolbar";
 
 interface FeatureFormProps {
   feature?: Feature;
@@ -64,18 +65,19 @@ export default function FeatureForm({ feature, mode = "edit", onClose }: Feature
   const [sortField, setSortField] = useState<"date" | "type" | "description">("date");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [notesTab, setNotesTab] = useState("edit");
+  const notesTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   const addMilestone = () => {
-    setMilestones([...milestones, { 
-      description: "", 
-      date: format(new Date(), "yyyy-MM-dd"), 
+    setMilestones([...milestones, {
+      description: "",
+      date: format(new Date(), "yyyy-MM-dd"),
       completed: false,
       percentComplete: 0,
       type: "planning"
     }]);
-    form.setValue("milestones", [...milestones, { 
-      description: "", 
-      date: format(new Date(), "yyyy-MM-dd"), 
+    form.setValue("milestones", [...milestones, {
+      description: "",
+      date: format(new Date(), "yyyy-MM-dd"),
       completed: false,
       percentComplete: 0,
       type: "planning"
@@ -186,12 +188,16 @@ export default function FeatureForm({ feature, mode = "edit", onClose }: Feature
                       </TabsList>
                       <TabsContent value="edit" className="mt-0">
                         <FormControl>
-                          <Textarea
-                            className="font-mono"
-                            rows={8}
-                            placeholder="Use Markdown syntax for formatting..."
-                            {...field}
-                          />
+                          <div>
+                            <MarkdownToolbar textRef={notesTextareaRef} />
+                            <Textarea
+                              ref={notesTextareaRef}
+                              className="font-mono"
+                              rows={8}
+                              placeholder="Use Markdown syntax for formatting..."
+                              {...field}
+                            />
+                          </div>
                         </FormControl>
                       </TabsContent>
                       <TabsContent value="preview" className="mt-0">
@@ -317,7 +323,7 @@ export default function FeatureForm({ feature, mode = "edit", onClose }: Feature
           <div>
             <div className="flex items-center justify-between mb-4">
               <FormLabel className="text-lg font-semibold">
-                Milestones 
+                Milestones
                 <span className="ml-2 text-sm text-muted-foreground">
                   (Total Completion: {totalCompletion}%)
                 </span>
@@ -390,7 +396,7 @@ export default function FeatureForm({ feature, mode = "edit", onClose }: Feature
                 <div key={index} className="flex items-center gap-3 bg-muted/50 p-3 rounded-lg">
                   <Checkbox
                     checked={milestone.completed}
-                    onCheckedChange={(checked) => 
+                    onCheckedChange={(checked) =>
                       updateMilestone(index, "completed", checked)
                     }
                   />
