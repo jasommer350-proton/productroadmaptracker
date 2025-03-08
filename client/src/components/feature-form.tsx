@@ -7,12 +7,14 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { priorities, tShirtSizes, effortLevels } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ArrowLeft, ArrowUpDown } from "lucide-react";
+import ReactMarkdown from "react-markdown";
 
 interface FeatureFormProps {
   feature?: Feature;
@@ -61,6 +63,7 @@ export default function FeatureForm({ feature, mode = "edit", onClose }: Feature
   const [milestoneSearch, setMilestoneSearch] = useState("");
   const [sortField, setSortField] = useState<"date" | "type" | "description">("date");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [notesTab, setNotesTab] = useState("edit");
 
   const addMilestone = () => {
     setMilestones([...milestones, { 
@@ -121,6 +124,8 @@ export default function FeatureForm({ feature, mode = "edit", onClose }: Feature
     }
   };
 
+  const currentNotes = form.watch("notes");
+
   return (
     <div className="container mx-auto py-6">
       <div className="flex items-center gap-4 mb-6">
@@ -173,10 +178,28 @@ export default function FeatureForm({ feature, mode = "edit", onClose }: Feature
                 name="notes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Notes (Markdown)</FormLabel>
-                    <FormControl>
-                      <Textarea className="font-mono" rows={4} {...field} />
-                    </FormControl>
+                    <FormLabel>Notes</FormLabel>
+                    <Tabs value={notesTab} onValueChange={setNotesTab}>
+                      <TabsList className="mb-2">
+                        <TabsTrigger value="edit">Edit Markdown</TabsTrigger>
+                        <TabsTrigger value="preview">Preview</TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="edit" className="mt-0">
+                        <FormControl>
+                          <Textarea
+                            className="font-mono"
+                            rows={8}
+                            placeholder="Use Markdown syntax for formatting..."
+                            {...field}
+                          />
+                        </FormControl>
+                      </TabsContent>
+                      <TabsContent value="preview" className="mt-0">
+                        <div className="min-h-[200px] p-4 border rounded-md bg-muted/50 prose prose-sm max-w-none">
+                          <ReactMarkdown>{currentNotes || "_No content_"}</ReactMarkdown>
+                        </div>
+                      </TabsContent>
+                    </Tabs>
                     <FormMessage />
                   </FormItem>
                 )}
