@@ -8,9 +8,10 @@ import { apiRequest } from "@/lib/queryClient";
 interface KanbanBoardProps {
   features: Feature[];
   columnField: keyof Feature;
+  onEditFeature: (feature: Feature) => void;
 }
 
-export default function KanbanBoard({ features, columnField }: KanbanBoardProps) {
+export default function KanbanBoard({ features, columnField, onEditFeature }: KanbanBoardProps) {
   const updateFeature = useMutation({
     mutationFn: async ({ id, update }: { id: number; update: Partial<Feature> }) => {
       await apiRequest("PATCH", `/api/features/${id}`, update);
@@ -46,6 +47,7 @@ export default function KanbanBoard({ features, columnField }: KanbanBoardProps)
                 features={features.filter(
                   (f) => String(f[columnField]) === columnValue
                 )}
+                onEditFeature={onEditFeature}
                 provided={provided}
               />
             )}

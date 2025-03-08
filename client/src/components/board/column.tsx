@@ -5,10 +5,11 @@ import FeatureCard from "./feature-card";
 interface ColumnProps {
   title: string;
   features: Feature[];
+  onEditFeature: (feature: Feature) => void;
   provided: DroppableProvided;
 }
 
-export default function Column({ title, features, provided }: ColumnProps) {
+export default function Column({ title, features, onEditFeature, provided }: ColumnProps) {
   return (
     <div
       ref={provided.innerRef}
@@ -18,7 +19,12 @@ export default function Column({ title, features, provided }: ColumnProps) {
       <h2 className="font-semibold mb-4 capitalize">{title}</h2>
       <div className="space-y-2">
         {features.map((feature, index) => (
-          <FeatureCard key={feature.id} feature={feature} index={index} />
+          <FeatureCard 
+            key={feature.id} 
+            feature={feature} 
+            index={index}
+            onEdit={() => onEditFeature(feature)}
+          />
         ))}
         {provided.placeholder}
       </div>

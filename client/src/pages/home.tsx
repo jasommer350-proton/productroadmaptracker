@@ -4,16 +4,23 @@ import KanbanBoard from "@/components/board/kanban-board";
 import SearchBar from "@/components/search-bar";
 import { Button } from "@/components/ui/button";
 import { Settings2, Plus } from "lucide-react";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import ColumnConfig from "@/components/dialogs/column-config";
-import FeatureDialog from "@/components/dialogs/feature-dialog";
+import FeatureForm from "@/components/feature-form";
 import { Feature } from "@shared/schema";
+
+type View = "board" | "form";
+
+interface FormState {
+  mode: "create" | "edit";
+  feature?: Feature;
+}
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState("");
   const [columnField, setColumnField] = useState<keyof Feature>("priority");
   const [showColumnConfig, setShowColumnConfig] = useState(false);
-  const [showNewFeature, setShowNewFeature] = useState(false);
+  const [view, setView] = useState<View>("board");
+  const [formState, setFormState] = useState<FormState>({ mode: "create" });
 
   const { data: features = [], isLoading } = useQuery({
     queryKey: ["/api/features"],
@@ -23,21 +30,31 @@ export default function Home() {
     feature.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const showForm = (mode: "create" | "edit", feature?: Feature) => {
+    setFormState({ mode, feature });
+    setView("form");
+  };
+
+  if (view === "form") {
+    return (
+      <FeatureForm
+        mode={formState.mode}
+        feature={formState.feature}
+        onClose={() => setView("board")}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-3xl font-bold">Product Roadmap</h1>
           <div className="flex gap-2">
-            <Dialog open={showNewFeature} onOpenChange={setShowNewFeature}>
-              <DialogTrigger asChild>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  New Feature
-                </Button>
-              </DialogTrigger>
-              <FeatureDialog mode="create" onClose={() => setShowNewFeature(false)} />
-            </Dialog>
+            <Button onClick={() => showForm("create")}>
+              <Plus className="h-4 w-4 mr-2" />
+              New Feature
+            </Button>
             <Button
               variant="outline"
               size="icon"
@@ -55,7 +72,11 @@ export default function Home() {
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" />
           </div>
         ) : (
-          <KanbanBoard features={filteredFeatures} columnField={columnField} />
+          <KanbanBoard 
+            features={filteredFeatures} 
+            columnField={columnField} 
+            onEditFeature={(feature) => showForm("edit", feature)}
+          />
         )}
 
         <ColumnConfig

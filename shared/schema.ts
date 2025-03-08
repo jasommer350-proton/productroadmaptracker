@@ -9,6 +9,7 @@ export const effortLevels = ["low", "medium", "high"] as const;
 export const milestoneSchema = z.object({
   description: z.string(),
   date: z.string(),
+  completed: z.boolean().default(false)
 });
 
 export const features = pgTable("features", {
