@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { Feature, insertFeatureSchema } from "@shared/schema";
+import { Feature, insertFeatureSchema, milestoneTypes } from "@shared/schema";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -59,13 +59,28 @@ export default function FeatureForm({ feature, mode = "edit", onClose }: Feature
   const [milestones, setMilestones] = useState(defaultValues.milestones || []);
 
   const addMilestone = () => {
-    setMilestones([...milestones, { description: "", date: format(new Date(), "yyyy-MM-dd"), completed: false }]);
-    form.setValue("milestones", [...milestones, { description: "", date: format(new Date(), "yyyy-MM-dd"), completed: false }]);
+    setMilestones([...milestones, { 
+      description: "", 
+      date: format(new Date(), "yyyy-MM-dd"), 
+      completed: false,
+      percentComplete: 0,
+      type: "planning"
+    }]);
+    form.setValue("milestones", [...milestones, { 
+      description: "", 
+      date: format(new Date(), "yyyy-MM-dd"), 
+      completed: false,
+      percentComplete: 0,
+      type: "planning"
+    }]);
   };
 
   const updateMilestone = (index: number, field: keyof typeof milestones[0], value: any) => {
     const newMilestones = [...milestones];
     newMilestones[index] = { ...newMilestones[index], [field]: value };
+    if (field === 'completed') {
+      newMilestones[index].percentComplete = value ? 100 : 0;
+    }
     setMilestones(newMilestones);
     form.setValue("milestones", newMilestones);
   };
@@ -75,6 +90,10 @@ export default function FeatureForm({ feature, mode = "edit", onClose }: Feature
     setMilestones(newMilestones);
     form.setValue("milestones", newMilestones);
   };
+
+  const totalCompletion = milestones.length > 0
+    ? Math.round(milestones.reduce((sum, m) => sum + m.percentComplete, 0) / milestones.length)
+    : 0;
 
   return (
     <div className="container mx-auto py-6">
@@ -248,7 +267,12 @@ export default function FeatureForm({ feature, mode = "edit", onClose }: Feature
 
           <div>
             <div className="flex items-center justify-between mb-4">
-              <FormLabel className="text-lg font-semibold">Milestones</FormLabel>
+              <FormLabel className="text-lg font-semibold">
+                Milestones 
+                <span className="ml-2 text-sm text-muted-foreground">
+                  (Total Completion: {totalCompletion}%)
+                </span>
+              </FormLabel>
               <Button type="button" variant="outline" onClick={addMilestone}>
                 Add Milestone
               </Button>
@@ -268,6 +292,30 @@ export default function FeatureForm({ feature, mode = "edit", onClose }: Feature
                     onChange={(e) => updateMilestone(index, "description", e.target.value)}
                     className="flex-1"
                   />
+                  <Select
+                    value={milestone.type}
+                    onValueChange={(value) => updateMilestone(index, "type", value)}
+                  >
+                    <SelectTrigger className="w-[140px]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {milestoneTypes.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={milestone.percentComplete}
+                    onChange={(e) => updateMilestone(index, "percentComplete", parseInt(e.target.value, 10))}
+                    className="w-20"
+                  />
+                  <span className="text-sm text-muted-foreground">%</span>
                   <Input
                     type="date"
                     value={milestone.date}

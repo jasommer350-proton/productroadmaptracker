@@ -5,11 +5,14 @@ import { z } from "zod";
 export const priorities = ["high", "medium", "low"] as const;
 export const tShirtSizes = ["xs", "s", "m", "l", "xl"] as const;
 export const effortLevels = ["low", "medium", "high"] as const;
+export const milestoneTypes = ["planning", "development", "testing", "deployment", "review"] as const;
 
 export const milestoneSchema = z.object({
   description: z.string(),
   date: z.string(),
-  completed: z.boolean().default(false)
+  completed: z.boolean().default(false),
+  percentComplete: z.number().min(0).max(100).default(0),
+  type: z.enum(milestoneTypes).default("planning"),
 });
 
 export const features = pgTable("features", {
@@ -38,4 +41,5 @@ export type Feature = typeof features.$inferSelect;
 export type Priority = typeof priorities[number];
 export type TShirtSize = typeof tShirtSizes[number];
 export type EffortLevel = typeof effortLevels[number];
+export type MilestoneType = typeof milestoneTypes[number];
 export type Milestone = z.infer<typeof milestoneSchema>;
