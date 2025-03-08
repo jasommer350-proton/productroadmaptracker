@@ -12,7 +12,7 @@ import { queryClient, apiRequest } from "@/lib/queryClient";
 import { format } from "date-fns";
 import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ArrowUpDown } from "lucide-react";
 
 interface FeatureFormProps {
   feature?: Feature;
@@ -57,6 +57,10 @@ export default function FeatureForm({ feature, mode = "edit", onClose }: Feature
   });
 
   const [milestones, setMilestones] = useState(defaultValues.milestones || []);
+  const [milestoneFilter, setMilestoneFilter] = useState("all");
+  const [milestoneSearch, setMilestoneSearch] = useState("");
+  const [sortField, setSortField] = useState<"date" | "type" | "description">("date");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
 
   const addMilestone = () => {
     setMilestones([...milestones, { 
@@ -94,6 +98,28 @@ export default function FeatureForm({ feature, mode = "edit", onClose }: Feature
   const totalCompletion = milestones.length > 0
     ? Math.round(milestones.reduce((sum, m) => sum + m.percentComplete, 0) / milestones.length)
     : 0;
+
+  const sortMilestones = (a: any, b: any) => {
+    const modifier = sortDirection === "asc" ? 1 : -1;
+    if (sortField === "date") {
+      return modifier * (new Date(a.date).getTime() - new Date(b.date).getTime());
+    }
+    return modifier * a[sortField].localeCompare(b[sortField]);
+  };
+
+  const filteredMilestones = milestones
+    .filter(m => milestoneFilter === "all" || m.type === milestoneFilter)
+    .filter(m => m.description.toLowerCase().includes(milestoneSearch.toLowerCase()))
+    .sort(sortMilestones);
+
+  const toggleSort = (field: typeof sortField) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      setSortField(field);
+      setSortDirection("asc");
+    }
+  };
 
   return (
     <div className="container mx-auto py-6">
@@ -277,8 +303,67 @@ export default function FeatureForm({ feature, mode = "edit", onClose }: Feature
                 Add Milestone
               </Button>
             </div>
+
+            <div className="flex gap-4 mb-4">
+              <Select
+                value={milestoneFilter}
+                onValueChange={setMilestoneFilter}
+              >
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Filter by type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  {milestoneTypes.map((type) => (
+                    <SelectItem key={type} value={type}>
+                      {type}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+
+              <Input
+                placeholder="Search milestones..."
+                value={milestoneSearch}
+                onChange={(e) => setMilestoneSearch(e.target.value)}
+                className="flex-1"
+              />
+            </div>
+
+            <div className="flex gap-4 mb-2 text-sm font-medium">
+              <Button
+                type="button"
+                variant="ghost"
+                className="flex-1"
+                onClick={() => toggleSort("description")}
+              >
+                Description
+                <ArrowUpDown className="ml-2 h-4 w-4" />
+              </Button>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => toggleSort("type")}
+                className="w-[140px]"
+              >
+                Type
+                <ArrowUpDown className="ml-2 h-4 w-4" />
+              </Button>
+              <div className="w-20">Progress</div>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => toggleSort("date")}
+                className="w-40"
+              >
+                Date
+                <ArrowUpDown className="ml-2 h-4 w-4" />
+              </Button>
+              <div className="w-10"></div>
+            </div>
+
             <div className="space-y-3">
-              {milestones.map((milestone, index) => (
+              {filteredMilestones.map((milestone, index) => (
                 <div key={index} className="flex items-center gap-3 bg-muted/50 p-3 rounded-lg">
                   <Checkbox
                     checked={milestone.completed}
